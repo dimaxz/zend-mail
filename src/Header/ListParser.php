@@ -35,7 +35,7 @@ class ListParser
         $currentQuoteDelim = null;
 
         for ($i = 0; $i < $length; $i += 1) {
-            $char = $value[$i];
+            $char = substr($value,$i,1);
 
             // If we are in an escape sequence, append the character and continue.
             if ($inEscape) {

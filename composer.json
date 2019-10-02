@@ -1,20 +1,10 @@
 {
-    "name": "zendframework/zend-mail",
-    "description": "Provides generalized functionality to compose and send both text and MIME-compliant multipart e-mail messages",
-    "license": "BSD-3-Clause",
+    "name": "dimaxz/zend-mail",
     "keywords": [
         "zf",
         "zendframework",
         "mail"
     ],
-    "support": {
-        "docs": "https://docs.zendframework.com/zend-mail/",
-        "issues": "https://github.com/zendframework/zend-mail/issues",
-        "source": "https://github.com/zendframework/zend-mail",
-        "rss": "https://github.com/zendframework/zend-mail/releases.atom",
-        "chat": "https://zendframework-slack.herokuapp.com",
-        "forum": "https://discourse.zendframework.com/c/questions/components"
-    },
     "require": {
         "php": "^5.6 || ^7.0",
         "ext-iconv": "*",
