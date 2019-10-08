@@ -109,6 +109,7 @@ class Part implements RecursiveIterator, Part\PartInterface
                 if (empty($params['noToplines'])) {
                     Mime\Decode::splitMessage($params['headers'], $this->headers, $this->topLines);
                 } else {
+                   // dump("####1");
                     $this->headers = Headers::fromString($params['headers']);
                 }
             }
@@ -270,6 +271,7 @@ class Part implements RecursiveIterator, Part\PartInterface
     {
         if (null === $this->headers) {
             if ($this->mail) {
+              //  dump("####4");
                 $part = $this->mail->getRawHeader($this->messageNum);
                 $this->headers = Headers::fromString($part);
             } else {

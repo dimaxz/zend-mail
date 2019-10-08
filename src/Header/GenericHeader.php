@@ -51,19 +51,28 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
     public static function splitHeaderLine($headerLine)
     {
         $parts = explode(':', $headerLine, 2);
+
+        $name = strtolower(trim($parts[0]));
+        $value = ltrim($parts[1]);
+
+        //фиксы
+        if(stripos($name,"subject")!==false && !preg_match("~^\=\?~is",$value)){
+            $value = '=?UTF-8?B?'. base64_encode($value) .'?=';
+        }
+
         if (count($parts) !== 2) {
             throw new Exception\InvalidArgumentException('Header must match with the format "name:value"');
         }
 
-        if (! HeaderName::isValid($parts[0])) {
+        if (! HeaderName::isValid($name)) {
             throw new Exception\InvalidArgumentException('Invalid header name detected');
         }
 
-        if (! HeaderValue::isValid($parts[1])) {
-            throw new Exception\InvalidArgumentException('Invalid header value detected');
+        if (! HeaderValue::isValid($value)) {
+            throw new Exception\InvalidArgumentException('Invalid header value detected ' . $headerLine);
         }
 
-        $parts[1] = ltrim($parts[1]);
+        $parts[1] = $value;
 
         return $parts;
     }

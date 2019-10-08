@@ -40,6 +40,7 @@ class Subject implements UnstructuredInterface
         }
 
         $header = new static();
+       // dump(">>>2".$value);
         $header->setSubject($value);
 
         return $header;
@@ -79,9 +80,12 @@ class Subject implements UnstructuredInterface
         $subject = (string) $subject;
 
         if (! HeaderWrap::canBeEncoded($subject)) {
-            throw new Exception\InvalidArgumentException(
-                'Subject value must be composed of printable US-ASCII or UTF-8 characters.'
-            );
+            $subject = '=?UTF-8?B?'. base64_encode($subject) .'?=';
+            if (! HeaderWrap::canBeEncoded($subject)) {
+                throw new Exception\InvalidArgumentException(
+                    'Subject value must be composed of printable US-ASCII or UTF-8 characters.'
+                );
+            }
         }
 
         $this->subject  = $subject;

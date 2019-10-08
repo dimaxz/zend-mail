@@ -235,9 +235,11 @@ class Headers implements Countable, Iterator
             }
         } elseif (is_array($fieldValue)) {
             foreach ($fieldValue as $i) {
+              //  dump("####5");
                 $this->addHeader(Header\GenericMultiHeader::fromString($headerFieldNameOrLine . ':' . $i));
             }
         } else {
+            //dump("####6");
             $this->addHeader(Header\GenericHeader::fromString($headerFieldNameOrLine . ':' . $fieldValue));
         }
 

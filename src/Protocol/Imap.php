@@ -118,6 +118,7 @@ class Imap
     protected function nextLine()
     {
         $line = fgets($this->socket);
+
         if ($line === false) {
             throw new Exception\RuntimeException('cannot read - connection closed?');
         }

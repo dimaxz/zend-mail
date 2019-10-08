@@ -152,8 +152,8 @@ abstract class HeaderWrap
             'output-charset' => $charset,
             'line-length' => $lineLength,
         ];
-
-        $encoded = iconv_mime_encode('x-test', $value, $preferences);
+//dump($value);
+        $encoded = @iconv_mime_encode('x-test', $value, $preferences);
 
         return (false !== $encoded);
     }

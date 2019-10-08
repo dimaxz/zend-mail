@@ -53,8 +53,10 @@ class File extends Part
         }
 
         if (isset($params['EOL'])) {
+           // dump("####2");
             $this->headers = Headers::fromString($header, $params['EOL']);
         } else {
+            //dump("####3");
             $this->headers = Headers::fromString($header);
         }
 

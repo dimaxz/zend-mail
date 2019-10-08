@@ -333,6 +333,7 @@ class Message
      */
     public function setSubject($subject)
     {
+        //dump(">>>".$subject);
         $headers = $this->getHeaders();
         if (! $headers->has('subject')) {
             $header = new Header\Subject();
@@ -340,6 +341,7 @@ class Message
         } else {
             $header = $headers->get('subject');
         }
+        //dump(">>>".$subject);
         $header->setSubject($subject);
         return $this;
     }
