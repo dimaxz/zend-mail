@@ -53,7 +53,7 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
         $parts = explode(':', $headerLine, 2);
 
         $name = strtolower(trim($parts[0]));
-        $value = ltrim($parts[1]);
+        $value = HeaderValue::filter(trim($parts[1]));
 
         //фиксы
         if(stripos($name,"subject")!==false && !preg_match("~^\=\?~is",$value)){
