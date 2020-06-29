@@ -63,6 +63,7 @@ class Address implements Address\AddressInterface
      */
     public function __construct($email, $name = null, $comment = null)
     {
+
         $emailAddressValidator = new EmailAddressValidator(Hostname::ALLOW_DNS | Hostname::ALLOW_LOCAL);
         if (! is_string($email) || empty($email)) {
             throw new Exception\InvalidArgumentException('Email must be a valid email address');
@@ -71,6 +72,8 @@ class Address implements Address\AddressInterface
         if (preg_match("/[\r\n]/", $email)) {
             throw new Exception\InvalidArgumentException('CRLF injection detected');
         }
+
+        $email = trim($email,"' \t\n\r\0\x0B");
 
         if (! $emailAddressValidator->isValid($email)) {
             $invalidMessages = $emailAddressValidator->getMessages();
