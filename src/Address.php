@@ -72,10 +72,11 @@ class Address implements Address\AddressInterface
         if (preg_match("/[\r\n]/", $email)) {
             throw new Exception\InvalidArgumentException('CRLF injection detected');
         }
-
+        
         $email = trim($email,"' \t\n\r\0\x0B");
 
         if (! $emailAddressValidator->isValid($email)) {
+
             $invalidMessages = $emailAddressValidator->getMessages();
             throw new Exception\InvalidArgumentException(array_shift($invalidMessages));
         }
