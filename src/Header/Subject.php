@@ -34,18 +34,7 @@ class Subject implements UnstructuredInterface
     {
 
         list($name, $value) = GenericHeader::splitHeaderLine($headerLine);
-
-        //пробуем склеить части заголовков
-        if(preg_match_all('~(\=\?.*?\?B\?)(.*?)(\?\=)~is',$value,$match)){
-            if(count($match[2])>1){
-                $clean = '';
-                foreach ($match[2] as $data){
-                    $clean .= $data;
-                }
-                $value = trim( $match[1][0] . $clean . $match[3][0]  );
-            }
-        }
-
+        
         $value = HeaderWrap::mimeDecodeValue($value);
 
         // check to ensure proper header type for this factory
