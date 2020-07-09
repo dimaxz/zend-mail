@@ -40,7 +40,7 @@ class Sender implements HeaderInterface
             throw new Exception\InvalidArgumentException('Invalid header name for Sender string');
         }
 
-        $header     = new static();
+        $header = new static();
 
         /**
          * matches the header value so that the email must be enclosed by < > when a name is present
@@ -48,7 +48,8 @@ class Sender implements HeaderInterface
          * @see https://tools.ietf.org/html/rfc5322#section-3.4
          */
         $hasMatches = preg_match(
-            '/^(?:(?P<name>.+)\s)?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
+            '/^(?:(?P<name>.+))?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
+            //'/^(?:(?P<name>.+)\s)?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
             $value,
             $matches
         );
@@ -57,7 +58,7 @@ class Sender implements HeaderInterface
             throw new Exception\InvalidArgumentException('Invalid header value for Sender string');
         }
 
-        $senderName = trim($matches['name']);
+        $senderName = trim($matches['name']," \t\n\r\0\x0B\"");
 
         if (empty($senderName)) {
             $senderName = null;
@@ -75,18 +76,18 @@ class Sender implements HeaderInterface
 
     public function getFieldValue($format = HeaderInterface::FORMAT_RAW)
     {
-        if (! $this->address instanceof Mail\Address\AddressInterface) {
+        if (!$this->address instanceof Mail\Address\AddressInterface) {
             return '';
         }
 
         $email = sprintf('<%s>', $this->address->getEmail());
-        $name  = $this->address->getName();
+        $name = $this->address->getName();
 
-        if (! empty($name)) {
+        if (!empty($name)) {
             if ($format == HeaderInterface::FORMAT_ENCODED) {
                 $encoding = $this->getEncoding();
                 if ('ASCII' !== $encoding) {
-                    $name  = HeaderWrap::mimeEncodeValue($name, $encoding);
+                    $name = HeaderWrap::mimeEncodeValue($name, $encoding);
                 }
             }
             $email = sprintf('%s %s', $name, $email);
@@ -103,7 +104,7 @@ class Sender implements HeaderInterface
 
     public function getEncoding()
     {
-        if (! $this->encoding) {
+        if (!$this->encoding) {
             $this->encoding = Mime::isPrintable($this->getFieldValue(HeaderInterface::FORMAT_RAW))
                 ? 'ASCII'
                 : 'UTF-8';
@@ -129,7 +130,7 @@ class Sender implements HeaderInterface
     {
         if (is_string($emailOrAddress)) {
             $emailOrAddress = new Mail\Address($emailOrAddress, $name);
-        } elseif (! $emailOrAddress instanceof Mail\Address\AddressInterface) {
+        } elseif (!$emailOrAddress instanceof Mail\Address\AddressInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string or AddressInterface object; received "%s"',
                 __METHOD__,
