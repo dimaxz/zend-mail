@@ -71,8 +71,11 @@ class Headers implements Countable, Iterator
         // iterate the header lines, some might be continuations
         $lines = explode($EOL, $string);
         $total = count($lines);
+
+
         for ($i = 0; $i < $total; $i += 1) {
             $line = $lines[$i];
+
 
             // Empty line indicates end of headers
             // EXCEPT if there are more lines, in which case, there's a possible error condition
@@ -89,12 +92,15 @@ class Headers implements Countable, Iterator
             }
 
             // check if a header name is present
+
             if (preg_match('/^[\x21-\x39\x3B-\x7E]+:.*$/', $line)) {
+
                 if ($currentLine) {
                     // a header name was present, then store the current complete line
                     $headers->addHeaderLine($currentLine);
                 }
                 $currentLine = trim($line);
+
                 continue;
             }
 
@@ -111,9 +117,11 @@ class Headers implements Countable, Iterator
                 $line
             ));
         }
+
         if ($currentLine) {
             $headers->addHeaderLine($currentLine);
         }
+        
         return $headers;
     }
 
@@ -227,6 +235,7 @@ class Headers implements Countable, Iterator
             ));
         }
 
+
         if ($fieldValue === null) {
             $headers = $this->loadHeader($headerFieldNameOrLine);
             $headers = is_array($headers) ? $headers : [$headers];
@@ -235,11 +244,11 @@ class Headers implements Countable, Iterator
             }
         } elseif (is_array($fieldValue)) {
             foreach ($fieldValue as $i) {
-              //  dump("####5");
+             //   dump("####5");
                 $this->addHeader(Header\GenericMultiHeader::fromString($headerFieldNameOrLine . ':' . $i));
             }
         } else {
-            //dump("####6");
+           // dump("####6");
             $this->addHeader(Header\GenericHeader::fromString($headerFieldNameOrLine . ':' . $fieldValue));
         }
 

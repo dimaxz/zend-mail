@@ -191,6 +191,7 @@ class Part implements RecursiveIterator, Part\PartInterface
         if (! $boundary) {
             throw new Exception\RuntimeException('no boundary found in content type to split message');
         }
+        
         $parts = Mime\Decode::splitMessageStruct($this->content, $boundary);
         if ($parts === null) {
             return;

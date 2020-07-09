@@ -54,7 +54,7 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
 
         $name = strtolower(trim($parts[0]));
         $value = HeaderValue::filter(trim($parts[1]));
-
+      
         //фиксы
         if(stripos($name,"subject")!==false && !preg_match("~^\=\?~is",$value)){
             $value = '=?UTF-8?B?'. base64_encode($value) .'?=';
