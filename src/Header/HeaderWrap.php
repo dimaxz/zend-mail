@@ -108,9 +108,11 @@ abstract class HeaderWrap
         $parts = explode(Headers::FOLDING, $value);
 //dump($parts);
         $value = implode(' ', $parts);
+        
 
-
-        if(!$decodedValue = @iconv_mime_decode($value, 0, "UTF-8") ){
+        if (!preg_match("/=\?.+\?=/", $value)
+            || !$decodedValue = @iconv_mime_decode($value, 0, "UTF-8")
+        ) {
             $decodedValue = $value;
         }
 
@@ -119,6 +121,8 @@ abstract class HeaderWrap
 
         // imap (unlike iconv) can handle multibyte headers which are splitted across multiple line
         if (self::isNotDecoded($value, $decodedValue) && extension_loaded('imap')) {
+
+
             return array_reduce(
                 imap_mime_header_decode(imap_utf8($value)),
                 function ($accumulator, $headerPart) {
