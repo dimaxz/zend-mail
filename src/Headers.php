@@ -93,7 +93,7 @@ class Headers implements Countable, Iterator
 
             // check if a header name is present
 
-            if (preg_match('/^[\x21-\x39\x3B-\x7E]+:.*$/', $line)) {
+            if (preg_match('/^[\x21-\x39\x3B-\x7E]+:.*$/s', $line)) {
 
                 if ($currentLine) {
                     // a header name was present, then store the current complete line
