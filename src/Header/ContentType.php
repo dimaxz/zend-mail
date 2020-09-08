@@ -111,10 +111,10 @@ class ContentType implements UnstructuredInterface
     public function setType($type)
     {
         $type = trim($type);
-        
-        if (! preg_match('/^[a-z-]+\/[a-z0-9.+-]+$/i', $type)) {
+
+        if (! preg_match('/^[a-z0-9.+-\/]/i', $type)) {
             throw new Exception\InvalidArgumentException(sprintf(
-                '%s expects a value in the format "type/subtype"; received "%s"',
+                '%s contains unsupported characters; received "%s"',
                 __METHOD__,
                 (string) $type
             ));
