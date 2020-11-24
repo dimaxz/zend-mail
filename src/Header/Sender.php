@@ -40,30 +40,30 @@ class Sender implements HeaderInterface
             throw new Exception\InvalidArgumentException('Invalid header name for Sender string');
         }
 
-        $header = new static();
+        $header     = new static();
 
         /**
          * matches the header value so that the email must be enclosed by < > when a name is present
          * 'name' and 'email' capture groups correspond respectively to 'display-name' and 'addr-spec' in the ABNF
          * @see https://tools.ietf.org/html/rfc5322#section-3.4
          */
-        preg_match(
-            '/^(?:(?P<name>.+))?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
-            //'/^(?:(?P<name>.+)\s)?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
+        $hasMatches = preg_match(
+            '/^(?:(?P<name>.+)\s)?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
             $value,
             $matches
         );
 
-        $senderName = null;
-        if (!empty($matches['name'])) {
-            $senderName = trim($matches['name'], " \t\n\r\0\x0B\"");
+        if ($hasMatches !== 1) {
+            throw new Exception\InvalidArgumentException('Invalid header value for Sender string');
         }
 
-        $senderEmail = 'empty@sender.mail';
-        if (!empty($matches['email'])) {
-            $senderEmail = $matches['email'];
+        $senderName = trim($matches['name']);
+
+        if (empty($senderName)) {
+            $senderName = null;
         }
-        $header->setAddress($senderEmail, $senderName);
+
+        $header->setAddress($matches['email'], $senderName);
 
         return $header;
     }
