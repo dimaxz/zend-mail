@@ -164,7 +164,7 @@ abstract class HeaderWrap
             'line-length' => $lineLength,
         ];
 //dump($value);
-        $encoded = @iconv_mime_encode('x-test', $value, $preferences);
+        $encoded = preg_replace('/^:\s+/', '', @iconv_mime_encode("x-test", $value, $preferences));
 
         return (false !== $encoded);
     }
