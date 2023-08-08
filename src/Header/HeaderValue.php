@@ -26,13 +26,20 @@ final class HeaderValue
     public static function filter($value)
     {
         $result = '';
-        $total  = strlen($value);
+        $total  = mb_strlen($value);
 
         // Filter for CR and LF characters, leaving CRLF + WSP sequences for
         // Long Header Fields (section 2.2.3 of RFC 2822)
         for ($i = 0; $i < $total; $i += 1) {
-            $ord = ord($value[$i]);
-            if ($ord === 10 || $ord > 127) {
+
+            $char = mb_substr($value,$i,1);
+
+            $ord = mb_ord($char);
+
+            /**
+             * @todo Lanetz фикс, добавлена возможность раборты с кирилицей
+             */
+            if ($ord === 10 || ($ord > 127 && $ord < 1040)) {
                 continue;
             }
 
@@ -41,8 +48,8 @@ final class HeaderValue
                     continue;
                 }
 
-                $lf = ord($value[$i + 1]);
-                $sp = ord($value[$i + 2]);
+                $lf = mb_ord(mb_substr($value,$i+1,1));
+                $sp = mb_ord(mb_substr($value,$i+2,1));
 
                 if ($lf !== 10 || $sp !== 32) {
                     continue;
@@ -53,7 +60,7 @@ final class HeaderValue
                 continue;
             }
 
-            $result .= $value[$i];
+            $result .= $char;
         }
 
         return $result;
@@ -68,12 +75,17 @@ final class HeaderValue
      */
     public static function isValid($value)
     {
-        $total = strlen($value);
+        $total = mb_strlen($value);
+
         for ($i = 0; $i < $total; $i += 1) {
-            $ord = ord($value[$i]);
+
+            $char = mb_substr($value,$i,1);
+
+            $ord = mb_ord($char);
 
             // bare LF means we aren't valid
-            if ($ord === 10 || $ord > 127) {
+
+            if ($ord === 10 || ($ord > 127 && $ord < 1040)) {
                 return false;
             }
 
@@ -82,8 +94,8 @@ final class HeaderValue
                     return false;
                 }
 
-                $lf = ord($value[$i + 1]);
-                $sp = ord($value[$i + 2]);
+                $lf = mb_ord(mb_substr($value,$i+1,1));
+                $sp = mb_ord(mb_substr($value,$i+2,1));
 
                 if ($lf !== 10 || ! in_array($sp, [9, 32], true)) {
                     return false;

@@ -109,6 +109,7 @@ class Part implements RecursiveIterator, Part\PartInterface
                 if (empty($params['noToplines'])) {
                     Mime\Decode::splitMessage($params['headers'], $this->headers, $this->topLines);
                 } else {
+                   // dump("####1");
                     $this->headers = Headers::fromString($params['headers']);
                 }
             }
@@ -190,6 +191,14 @@ class Part implements RecursiveIterator, Part\PartInterface
         if (! $boundary) {
             throw new Exception\RuntimeException('no boundary found in content type to split message');
         }
+
+        //костыль для некорректного окончания письма
+        $fullBoundary = '--' . $boundary . '--';
+        $msgLastPart = substr($this->content, -1 * strlen($fullBoundary) - 1);
+        if (strpos($msgLastPart, '--' . $boundary . '--') === false) {
+            $this->content .= "\n" . $fullBoundary . "\n";
+        }
+
         $parts = Mime\Decode::splitMessageStruct($this->content, $boundary);
         if ($parts === null) {
             return;
@@ -270,6 +279,7 @@ class Part implements RecursiveIterator, Part\PartInterface
     {
         if (null === $this->headers) {
             if ($this->mail) {
+              //  dump("####4");
                 $part = $this->mail->getRawHeader($this->messageNum);
                 $this->headers = Headers::fromString($part);
             } else {

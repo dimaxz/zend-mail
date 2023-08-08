@@ -11,6 +11,7 @@ use TrueBV\Exception\OutOfBoundsException;
 use TrueBV\Punycode;
 use Zend\Mail\Address;
 use Zend\Mail\AddressList;
+use Zend\Mail\Exception\InvalidArgumentException;
 use Zend\Mail\Headers;
 
 /**
@@ -83,7 +84,14 @@ abstract class AbstractAddressList implements HeaderInterface
                     $value
                 );
 
-                return empty($value) ? null : Address::fromString($value, $comments);
+                try{
+                    $address = Address::fromString($value, $comments);
+                }
+                catch (InvalidArgumentException $ex){
+                    $address = null;
+                }
+
+                return empty($value) ? null : $address;
             },
             $values
         );

@@ -103,15 +103,26 @@ abstract class HeaderWrap
     {
         // unfold first, because iconv_mime_decode is discarding "\n" with no apparent reason
         // making the resulting value no longer valid.
-
+//dump($value);
         // see https://tools.ietf.org/html/rfc2822#section-2.2.3 about unfolding
         $parts = explode(Headers::FOLDING, $value);
+//dump($parts);
         $value = implode(' ', $parts);
+        
 
-        $decodedValue = iconv_mime_decode($value, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
+        if (!preg_match("/=\?.+\?=/", $value)
+            || !$decodedValue = @iconv_mime_decode($value, 0, "UTF-8")
+        ) {
+            $decodedValue = $value;
+        }
+
+       // $decodedValue = iconv_mime_decode($value, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
+
 
         // imap (unlike iconv) can handle multibyte headers which are splitted across multiple line
         if (self::isNotDecoded($value, $decodedValue) && extension_loaded('imap')) {
+
+
             return array_reduce(
                 imap_mime_header_decode(imap_utf8($value)),
                 function ($accumulator, $headerPart) {
@@ -124,7 +135,7 @@ abstract class HeaderWrap
         return $decodedValue;
     }
 
-    private static function isNotDecoded($originalValue, $value)
+    public static function isNotDecoded($originalValue, $value)
     {
         return 0 === strpos($value, '=?')
             && strlen($value) - 2 === strpos($value, '?=')
@@ -152,8 +163,8 @@ abstract class HeaderWrap
             'output-charset' => $charset,
             'line-length' => $lineLength,
         ];
-
-        $encoded = iconv_mime_encode('x-test', $value, $preferences);
+//dump($value);
+        $encoded = preg_replace('/^:\s+/', '', @iconv_mime_encode("x-test", $value, $preferences));
 
         return (false !== $encoded);
     }

@@ -7,6 +7,7 @@
 
 namespace Zend\Mail\Header;
 
+use Zend\Mail\Headers;
 use Zend\Mime\Mime;
 
 /**
@@ -31,7 +32,9 @@ class Subject implements UnstructuredInterface
 
     public static function fromString($headerLine)
     {
+
         list($name, $value) = GenericHeader::splitHeaderLine($headerLine);
+        
         $value = HeaderWrap::mimeDecodeValue($value);
 
         // check to ensure proper header type for this factory
@@ -40,7 +43,7 @@ class Subject implements UnstructuredInterface
         }
 
         $header = new static();
-        $header->setSubject($value);
+        $header->setSubject(trim($value));
 
         return $header;
     }
@@ -79,9 +82,12 @@ class Subject implements UnstructuredInterface
         $subject = (string) $subject;
 
         if (! HeaderWrap::canBeEncoded($subject)) {
-            throw new Exception\InvalidArgumentException(
-                'Subject value must be composed of printable US-ASCII or UTF-8 characters.'
-            );
+            $subject = '=?UTF-8?B?'. base64_encode($subject) .'?=';
+            if (! HeaderWrap::canBeEncoded($subject)) {
+                throw new Exception\InvalidArgumentException(
+                    'Subject value must be composed of printable US-ASCII or UTF-8 characters.'
+                );
+            }
         }
 
         $this->subject  = $subject;
