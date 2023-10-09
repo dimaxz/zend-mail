@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Storage;
@@ -30,7 +32,7 @@ class Message extends Part implements Message\MessageInterface
     public function __construct(array $params)
     {
         if (isset($params['file'])) {
-            if (! is_resource($params['file'])) {
+            if (!is_resource($params['file'])) {
                 ErrorHandler::start();
                 $params['raw'] = file_get_contents($params['file']);
                 $error = ErrorHandler::stop();
@@ -44,7 +46,7 @@ class Message extends Part implements Message\MessageInterface
             $params['raw'] = ltrim($params['raw']);
         }
 
-        if (! empty($params['flags'])) {
+        if (!empty($params['flags'])) {
             // set key and value to the same value for easy lookup
             $this->flags = array_combine($params['flags'], $params['flags']);
         }

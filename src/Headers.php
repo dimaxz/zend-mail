@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail;
@@ -12,8 +14,6 @@ use Countable;
 use Iterator;
 use Traversable;
 use Zend\Loader\PluginClassLocator;
-use Zend\Mail\Header\GenericHeader;
-use Zend\Mail\Header\HeaderInterface;
 
 /**
  * Basic mail headers collection functionality
@@ -71,11 +71,8 @@ class Headers implements Countable, Iterator
         // iterate the header lines, some might be continuations
         $lines = explode($EOL, $string);
         $total = count($lines);
-
-
         for ($i = 0; $i < $total; $i += 1) {
             $line = $lines[$i];
-
 
             // Empty line indicates end of headers
             // EXCEPT if there are more lines, in which case, there's a possible error condition
@@ -87,20 +84,17 @@ class Headers implements Countable, Iterator
                 continue;
             }
 
-            if ($emptyLine > 1) {
+            if ($emptyLine > 0) {
                 throw new Exception\RuntimeException('Malformed header detected');
             }
 
             // check if a header name is present
-
-            if (preg_match('/^[\x21-\x39\x3B-\x7E]+:.*$/s', $line)) {
-
+            if (preg_match('/^[\x21-\x39\x3B-\x7E]+:.*$/', $line)) {
                 if ($currentLine) {
                     // a header name was present, then store the current complete line
                     $headers->addHeaderLine($currentLine);
                 }
                 $currentLine = trim($line);
-
                 continue;
             }
 
@@ -113,15 +107,13 @@ class Headers implements Countable, Iterator
 
             // Line does not match header format!
             throw new Exception\RuntimeException(sprintf(
-                'Line "%s" does not match header format!',
+                'Line "%s"does not match header format!',
                 $line
             ));
         }
-
         if ($currentLine) {
             $headers->addHeaderLine($currentLine);
         }
-        
         return $headers;
     }
 
@@ -186,7 +178,7 @@ class Headers implements Countable, Iterator
      */
     public function addHeaders($headers)
     {
-        if (! is_array($headers) && ! $headers instanceof Traversable) {
+        if (!is_array($headers) && !$headers instanceof Traversable) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expected array or Traversable; received "%s"',
                 (is_object($headers) ? get_class($headers) : gettype($headers))
@@ -225,7 +217,7 @@ class Headers implements Countable, Iterator
      */
     public function addHeaderLine($headerFieldNameOrLine, $fieldValue = null)
     {
-        if (! is_string($headerFieldNameOrLine)) {
+        if (!is_string($headerFieldNameOrLine)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects its first argument to be a string; received "%s"',
                 __METHOD__,
@@ -235,20 +227,13 @@ class Headers implements Countable, Iterator
             ));
         }
 
-
         if ($fieldValue === null) {
-            $headers = $this->loadHeader($headerFieldNameOrLine);
-            $headers = is_array($headers) ? $headers : [$headers];
-            foreach ($headers as $header) {
-                $this->addHeader($header);
-            }
+            $this->addHeader(Header\GenericHeader::fromString($headerFieldNameOrLine));
         } elseif (is_array($fieldValue)) {
             foreach ($fieldValue as $i) {
-             //   dump("####5");
                 $this->addHeader(Header\GenericMultiHeader::fromString($headerFieldNameOrLine . ':' . $i));
             }
         } else {
-           // dump("####6");
             $this->addHeader(Header\GenericHeader::fromString($headerFieldNameOrLine . ':' . $fieldValue));
         }
 
@@ -287,7 +272,7 @@ class Headers implements Countable, Iterator
             $indexes = array_keys($this->headersKeys, $key, true);
         }
 
-        if (! empty($indexes)) {
+        if (!empty($indexes)) {
             foreach ($indexes as $index) {
                 unset($this->headersKeys[$index]);
                 unset($this->headers[$index]);
@@ -445,23 +430,22 @@ class Headers implements Countable, Iterator
     /**
      * Return the headers container as an array
      *
-     * @param  bool $format Return the values in Mime::Encoded or in Raw format
-     * @return array
      * @todo determine how to produce single line headers, if they are supported
+     * @return array
      */
-    public function toArray($format = Header\HeaderInterface::FORMAT_RAW)
+    public function toArray()
     {
         $headers = [];
         /* @var $header Header\HeaderInterface */
         foreach ($this->headers as $header) {
             if ($header instanceof Header\MultipleHeadersInterface) {
                 $name = $header->getFieldName();
-                if (! isset($headers[$name])) {
+                if (!isset($headers[$name])) {
                     $headers[$name] = [];
                 }
-                $headers[$name][] = $header->getFieldValue($format);
+                $headers[$name][] = $header->getFieldValue();
             } else {
-                $headers[$header->getFieldName()] = $header->getFieldValue($format);
+                $headers[$header->getFieldName()] = $header->getFieldValue();
             }
         }
         return $headers;
@@ -481,21 +465,6 @@ class Headers implements Countable, Iterator
     }
 
     /**
-     * Create Header object from header line
-     *
-     * @param string $headerLine
-     * @return Header\HeaderInterface|Header\HeaderInterface[]
-     */
-    public function loadHeader($headerLine)
-    {
-        list($name, ) = Header\GenericHeader::splitHeaderLine($headerLine);
-
-        /** @var HeaderInterface $class */
-        $class = $this->getPluginClassLoader()->load($name) ?: Header\GenericHeader::class;
-        return $class::fromString($headerLine);
-    }
-
-    /**
      * @param $index
      * @return mixed
      */
@@ -504,8 +473,6 @@ class Headers implements Countable, Iterator
         $current = $this->headers[$index];
 
         $key   = $this->headersKeys[$index];
-
-        /** @var GenericHeader $class */
         $class = ($this->getPluginClassLoader()->load($key)) ?: 'Zend\Mail\Header\GenericHeader';
 
         $encoding = $current->getEncoding();

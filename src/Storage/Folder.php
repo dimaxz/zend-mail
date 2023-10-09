@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Storage;
@@ -30,7 +32,7 @@ class Folder implements RecursiveIterator
     protected $globalName;
 
     /**
-     * folder is selectable if folder is able to hold messages, otherwise it is a parent folder
+     * folder is selectable if folder is able to hold messages, else it's just a parent folder
      * @var bool
      */
     protected $selectable = true;
@@ -40,9 +42,8 @@ class Folder implements RecursiveIterator
      *
      * @param string $localName  name of folder in current subdirectory
      * @param string $globalName absolute name of folder
-     * @param bool $selectable if true folder holds messages, if false it's
-     *     just a parent for subfolders (Default: true)
-     * @param array $folders init with given instances of Folder as subfolders
+     * @param bool   $selectable if true folder holds messages, if false it's just a parent for subfolders (Default: true)
+     * @param array  $folders    init with given instances of \Zend\Mail\Storage\Folder as subfolders
      */
     public function __construct($localName, $globalName = '', $selectable = true, array $folders = [])
     {
@@ -60,7 +61,7 @@ class Folder implements RecursiveIterator
     public function hasChildren()
     {
         $current = $this->current();
-        return $current && $current instanceof Folder && ! $current->isLeaf();
+        return $current && $current instanceof Folder && !$current->isLeaf();
     }
 
     /**
@@ -128,7 +129,7 @@ class Folder implements RecursiveIterator
      */
     public function __get($name)
     {
-        if (! isset($this->folders[$name])) {
+        if (!isset($this->folders[$name])) {
             throw new Exception\InvalidArgumentException("no subfolder named $name");
         }
 

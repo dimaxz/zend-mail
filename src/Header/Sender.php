@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Header;
@@ -37,32 +39,24 @@ class Sender implements HeaderInterface
 
         // check to ensure proper header type for this factory
         if (strtolower($name) !== 'sender') {
-            throw new Exception\InvalidArgumentException('Invalid header name for Sender string');
+            throw new Exception\InvalidArgumentException('Invalid header line for Sender string');
         }
 
-        $header = new static();
+        $header      = new static();
+        $senderName  = '';
+        $senderEmail = '';
 
-        /**
-         * matches the header value so that the email must be enclosed by < > when a name is present
-         * 'name' and 'email' capture groups correspond respectively to 'display-name' and 'addr-spec' in the ABNF
-         * @see https://tools.ietf.org/html/rfc5322#section-3.4
-         */
-        preg_match(
-            '/^(?:(?P<name>.+))?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
-            //'/^(?:(?P<name>.+)\s)?(?(name)<|<?)(?P<email>[^\s]+?)(?(name)>|>?)$/',
-            $value,
-            $matches
-        );
-
-        $senderName = null;
-        if (!empty($matches['name'])) {
-            $senderName = trim($matches['name'], " \t\n\r\0\x0B\"");
-        }
-
-        $senderEmail = 'empty@sender.mail';
-        if (!empty($matches['email'])) {
+        // Check for address, and set if found
+        if (preg_match('/^(?P<name>.*?)<(?P<email>[^>]+)>$/', $value, $matches)) {
+            $senderName = trim($matches['name']);
+            if (empty($senderName)) {
+                $senderName = null;
+            }
             $senderEmail = $matches['email'];
+        } else {
+            $senderEmail = $value;
         }
+
         $header->setAddress($senderEmail, $senderName);
 
         return $header;
@@ -75,18 +69,18 @@ class Sender implements HeaderInterface
 
     public function getFieldValue($format = HeaderInterface::FORMAT_RAW)
     {
-        if (!$this->address instanceof Mail\Address\AddressInterface) {
+        if (! $this->address instanceof Mail\Address\AddressInterface) {
             return '';
         }
 
         $email = sprintf('<%s>', $this->address->getEmail());
-        $name = $this->address->getName();
+        $name  = $this->address->getName();
 
         if (!empty($name)) {
             if ($format == HeaderInterface::FORMAT_ENCODED) {
                 $encoding = $this->getEncoding();
                 if ('ASCII' !== $encoding) {
-                    $name = HeaderWrap::mimeEncodeValue($name, $encoding);
+                    $name  = HeaderWrap::mimeEncodeValue($name, $encoding);
                 }
             }
             $email = sprintf('%s %s', $name, $email);
@@ -103,7 +97,7 @@ class Sender implements HeaderInterface
 
     public function getEncoding()
     {
-        if (!$this->encoding) {
+        if (! $this->encoding) {
             $this->encoding = Mime::isPrintable($this->getFieldValue(HeaderInterface::FORMAT_RAW))
                 ? 'ASCII'
                 : 'UTF-8';

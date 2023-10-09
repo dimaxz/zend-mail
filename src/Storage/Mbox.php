@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Storage;
@@ -89,7 +91,7 @@ class Mbox extends AbstractStorage
      */
     protected function getPos($id)
     {
-        if (! isset($this->positions[$id - 1])) {
+        if (!isset($this->positions[$id - 1])) {
             throw new Exception\InvalidArgumentException('id does not exist');
         }
 
@@ -192,7 +194,7 @@ class Mbox extends AbstractStorage
             $params = (object) $params;
         }
 
-        if (! isset($params->filename)) {
+        if (!isset($params->filename)) {
             throw new Exception\InvalidArgumentException('no valid filename given in params');
         }
 
@@ -220,7 +222,7 @@ class Mbox extends AbstractStorage
             ErrorHandler::start(E_WARNING);
             $file = fopen($file, 'r');
             ErrorHandler::stop();
-            if (! $file) {
+            if (!$file) {
                 return false;
             }
         } else {
@@ -259,13 +261,13 @@ class Mbox extends AbstractStorage
         ErrorHandler::start();
         $this->fh = fopen($filename, 'r');
         $error = ErrorHandler::stop();
-        if (! $this->fh) {
+        if (!$this->fh) {
             throw new Exception\RuntimeException('cannot open mbox file', 0, $error);
         }
         $this->filename = $filename;
         $this->filemtime = filemtime($this->filename);
 
-        if (! $this->isMboxFile($this->fh, false)) {
+        if (!$this->isMboxFile($this->fh, false)) {
             ErrorHandler::start(E_WARNING);
             fclose($this->fh);
             $error = ErrorHandler::stop();
@@ -276,19 +278,19 @@ class Mbox extends AbstractStorage
         while (($line = fgets($this->fh)) !== false) {
             if (strpos($line, 'From ') === 0) {
                 $messagePos['end'] = ftell($this->fh) - strlen($line) - 2; // + newline
-                if (! $messagePos['separator']) {
+                if (!$messagePos['separator']) {
                     $messagePos['separator'] = $messagePos['end'];
                 }
                 $this->positions[] = $messagePos;
                 $messagePos = ['start' => ftell($this->fh), 'separator' => 0, 'end' => 0];
             }
-            if (! $messagePos['separator'] && ! trim($line)) {
+            if (!$messagePos['separator'] && !trim($line)) {
                 $messagePos['separator'] = ftell($this->fh);
             }
         }
 
         $messagePos['end'] = ftell($this->fh);
-        if (! $messagePos['separator']) {
+        if (!$messagePos['separator']) {
             $messagePos['separator'] = $messagePos['end'];
         }
         $this->positions[] = $messagePos;
@@ -402,7 +404,7 @@ class Mbox extends AbstractStorage
             ErrorHandler::start();
             $this->fh = fopen($this->filename, 'r');
             $error    = ErrorHandler::stop();
-            if (! $this->fh) {
+            if (!$this->fh) {
                 throw new Exception\RuntimeException('cannot open mbox file', 0, $error);
             }
         }

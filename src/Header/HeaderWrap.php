@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Header;
@@ -101,45 +103,9 @@ abstract class HeaderWrap
      */
     public static function mimeDecodeValue($value)
     {
-        // unfold first, because iconv_mime_decode is discarding "\n" with no apparent reason
-        // making the resulting value no longer valid.
-//dump($value);
-        // see https://tools.ietf.org/html/rfc2822#section-2.2.3 about unfolding
-        $parts = explode(Headers::FOLDING, $value);
-//dump($parts);
-        $value = implode(' ', $parts);
-        
-
-        if (!preg_match("/=\?.+\?=/", $value)
-            || !$decodedValue = @iconv_mime_decode($value, 0, "UTF-8")
-        ) {
-            $decodedValue = $value;
-        }
-
-       // $decodedValue = iconv_mime_decode($value, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
-
-
-        // imap (unlike iconv) can handle multibyte headers which are splitted across multiple line
-        if (self::isNotDecoded($value, $decodedValue) && extension_loaded('imap')) {
-
-
-            return array_reduce(
-                imap_mime_header_decode(imap_utf8($value)),
-                function ($accumulator, $headerPart) {
-                    return $accumulator . $headerPart->text;
-                },
-                ''
-            );
-        }
+        $decodedValue = iconv_mime_decode($value, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
 
         return $decodedValue;
-    }
-
-    public static function isNotDecoded($originalValue, $value)
-    {
-        return 0 === strpos($value, '=?')
-            && strlen($value) - 2 === strpos($value, '?=')
-            && false !== strpos($originalValue, $value);
     }
 
     /**
@@ -150,21 +116,7 @@ abstract class HeaderWrap
      */
     public static function canBeEncoded($value)
     {
-        // avoid any wrapping by specifying line length long enough
-        // "test" -> 4
-        // "x-test: =?ISO-8859-1?B?dGVzdA==?=" -> 33
-        //  8       +2          +3         +3  -> 16
-        $charset = 'UTF-8';
-        $lineLength = strlen($value) * 4 + strlen($charset) + 16;
-
-        $preferences = [
-            'scheme' => 'Q',
-            'input-charset' => $charset,
-            'output-charset' => $charset,
-            'line-length' => $lineLength,
-        ];
-//dump($value);
-        $encoded = preg_replace('/^:\s+/', '', @iconv_mime_encode("x-test", $value, $preferences));
+        $encoded = iconv_mime_encode('x-test', $value, ['scheme' => 'Q']);
 
         return (false !== $encoded);
     }

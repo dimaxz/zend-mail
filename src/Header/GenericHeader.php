@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Header;
@@ -28,10 +30,6 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
      */
     protected $encoding;
 
-    /**
-     * @param string $headerLine
-     * @return GenericHeader
-     */
     public static function fromString($headerLine)
     {
         list($name, $value) = self::splitHeaderLine($headerLine);
@@ -51,28 +49,20 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
     public static function splitHeaderLine($headerLine)
     {
         $parts = explode(':', $headerLine, 2);
-
-        $name = strtolower(trim($parts[0]));
-        $value = HeaderValue::filter(trim($parts[1]));
-      
-        //фиксы
-        if(stripos($name,"subject")!==false && !preg_match("~^\=\?~is",$value)){
-            $value = '=?UTF-8?B?'. base64_encode($value) .'?=';
-        }
-
         if (count($parts) !== 2) {
             throw new Exception\InvalidArgumentException('Header must match with the format "name:value"');
         }
 
-        if (! HeaderName::isValid($name)) {
+        if (! HeaderName::isValid($parts[0])) {
             throw new Exception\InvalidArgumentException('Invalid header name detected');
         }
 
-        if (! HeaderValue::isValid($value)) {
-            throw new Exception\InvalidArgumentException('Invalid header value detected ' . $headerLine);
+        if (! HeaderValue::isValid($parts[1])) {
+            throw new Exception\InvalidArgumentException('Invalid header value detected');
         }
 
-        $parts[1] = $value;
+        $parts[0] = $parts[0];
+        $parts[1] = ltrim($parts[1]);
 
         return $parts;
     }
@@ -89,7 +79,7 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
             $this->setFieldName($fieldName);
         }
 
-        if ($fieldValue !== null) {
+        if ($fieldValue) {
             $this->setFieldValue($fieldValue);
         }
     }
@@ -103,7 +93,7 @@ class GenericHeader implements HeaderInterface, UnstructuredInterface
      */
     public function setFieldName($fieldName)
     {
-        if (! is_string($fieldName) || empty($fieldName)) {
+        if (!is_string($fieldName) || empty($fieldName)) {
             throw new Exception\InvalidArgumentException('Header name must be a string');
         }
 

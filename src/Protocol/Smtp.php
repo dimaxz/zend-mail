@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Protocol;
@@ -10,13 +12,10 @@ namespace Zend\Mail\Protocol;
 /**
  * SMTP implementation of Zend\Mail\Protocol\AbstractProtocol
  *
- * Minimum implementation according to RFC2821: EHLO, MAIL FROM, RCPT TO, DATA,
- * RSET, NOOP, QUIT
+ * Minimum implementation according to RFC2821: EHLO, MAIL FROM, RCPT TO, DATA, RSET, NOOP, QUIT
  */
 class Smtp extends AbstractProtocol
 {
-    use ProtocolTrait;
-
     /**
      * The transport method for the socket
      *
@@ -65,13 +64,6 @@ class Smtp extends AbstractProtocol
      * @var bool
      */
     protected $data = null;
-
-    /**
-     * Whether or not send QUIT command
-     *
-     * @var bool
-     */
-    protected $useCompleteQuit = true;
 
     /**
      * Constructor.
@@ -130,18 +122,9 @@ class Smtp extends AbstractProtocol
                     }
                     break;
 
-                case '':
-                    // fall-through
-                case 'none':
-                    break;
-
                 default:
                     throw new Exception\InvalidArgumentException($config['ssl'] . ' is unsupported SSL type');
             }
-        }
-
-        if (array_key_exists('use_complete_quit', $config)) {
-            $this->setUseCompleteQuit($config['use_complete_quit']);
         }
 
         // If no port has been specified then check the master PHP ini file. Defaults to 25 if the ini setting is null.
@@ -154,26 +137,6 @@ class Smtp extends AbstractProtocol
         parent::__construct($host, $port);
     }
 
-    /**
-     * Set whether or not send QUIT command
-     *
-     * @param bool $useCompleteQuit use complete quit
-     * @return bool
-     */
-    public function setUseCompleteQuit($useCompleteQuit)
-    {
-        return $this->useCompleteQuit = (bool) $useCompleteQuit;
-    }
-
-    /**
-     * Whether or not send QUIT command
-     *
-     * @return bool
-     */
-    public function useCompleteQuit()
-    {
-        return $this->useCompleteQuit;
-    }
 
     /**
      * Connect to the server with the parameters given in the constructor.
@@ -200,25 +163,25 @@ class Smtp extends AbstractProtocol
         }
 
         // Validate client hostname
-        if (! $this->validHost->isValid($host)) {
+        if (!$this->validHost->isValid($host)) {
             throw new Exception\RuntimeException(implode(', ', $this->validHost->getMessages()));
         }
 
         // Initiate helo sequence
         $this->_expect(220, 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
-        $this->ehlo($host);
+        $this->_ehlo($host);
 
         // If a TLS session is required, commence negotiation
         if ($this->secure == 'tls') {
             $this->_send('STARTTLS');
             $this->_expect(220, 180);
-            if (! stream_socket_enable_crypto($this->socket, true, $this->getCryptoMethod())) {
+            if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
                 throw new Exception\RuntimeException('Unable to connect via TLS');
             }
-            $this->ehlo($host);
+            $this->_ehlo($host);
         }
 
-        $this->startSession();
+        $this->_startSession();
         $this->auth();
     }
 
@@ -238,7 +201,7 @@ class Smtp extends AbstractProtocol
      * @param  string $host The client hostname or IP address (default: 127.0.0.1)
      * @throws \Exception|Exception\ExceptionInterface
      */
-    protected function ehlo($host)
+    protected function _ehlo($host)
     {
         // Support for older, less-compliant remote servers. Tries multiple attempts of EHLO or HELO.
         try {
@@ -247,6 +210,8 @@ class Smtp extends AbstractProtocol
         } catch (Exception\ExceptionInterface $e) {
             $this->_send('HELO ' . $host);
             $this->_expect(250, 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
@@ -337,8 +302,8 @@ class Smtp extends AbstractProtocol
     /**
      * Issues the RSET command end validates answer
      *
-     * Can be used to restore a clean smtp communication state when a
-     * transaction has been cancelled or commencing a new transaction.
+     * Can be used to restore a clean smtp communication state when a transaction has been cancelled or commencing a new transaction.
+     *
      */
     public function rset()
     {
@@ -384,13 +349,9 @@ class Smtp extends AbstractProtocol
     {
         if ($this->sess) {
             $this->auth = false;
-
-            if ($this->useCompleteQuit()) {
-                $this->_send('QUIT');
-                $this->_expect(221, 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
-            }
-
-            $this->stopSession();
+            $this->_send('QUIT');
+            $this->_expect(221, 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
+            $this->_stopSession();
         }
     }
 
@@ -417,14 +378,11 @@ class Smtp extends AbstractProtocol
         $this->_disconnect();
     }
 
-    // @codingStandardsIgnoreStart
     /**
      * Disconnect from remote host and free resource
      */
     protected function _disconnect()
     {
-        // @codingStandardsIgnoreEnd
-
         // Make sure the session gets closed
         $this->quit();
         parent::_disconnect();
@@ -434,7 +392,7 @@ class Smtp extends AbstractProtocol
      * Start mail session
      *
      */
-    protected function startSession()
+    protected function _startSession()
     {
         $this->sess = true;
     }
@@ -443,7 +401,7 @@ class Smtp extends AbstractProtocol
      * Stop mail session
      *
      */
-    protected function stopSession()
+    protected function _stopSession()
     {
         $this->sess = false;
     }

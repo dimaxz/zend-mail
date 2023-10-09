@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Header;
@@ -40,20 +42,19 @@ class ContentType implements UnstructuredInterface
         }
 
         $value  = str_replace(Headers::FOLDING, ' ', $value);
-        $parts = explode(';', $value, 2);
+        $values = preg_split('#\s*;\s*#', $value);
 
+        $type   = array_shift($values);
         $header = new static();
-        $header->setType($parts[0]);
+        $header->setType($type);
 
-        if (isset($parts[1])) {
-            $values = ListParser::parse(trim($parts[1]), [';', '=']);
-            $length = count($values);
+        // Remove empty values
+        $values = array_filter($values);
 
-            for ($i = 0; $i < $length; $i += 2) {
-                $value = $values[$i + 1];
-                $value = trim($value, "'\" \t\n\r\0\x0B");
-                $header->addParameter($values[$i], $value);
-            }
+        foreach ($values as $keyValuePair) {
+            list($key, $value) = explode('=', $keyValuePair, 2);
+            $value = trim($value, "'\" \t\n\r\0\x0B");
+            $header->addParameter($key, $value);
         }
 
         return $header;
@@ -73,7 +74,7 @@ class ContentType implements UnstructuredInterface
 
         $values = [$prepared];
         foreach ($this->parameters as $attribute => $value) {
-            if (HeaderInterface::FORMAT_ENCODED === $format && ! Mime::isPrintable($value)) {
+            if (HeaderInterface::FORMAT_ENCODED === $format && !Mime::isPrintable($value)) {
                 $this->encoding = 'UTF-8';
                 $value = HeaderWrap::wrap($value, $this);
                 $this->encoding = 'ASCII';
@@ -110,11 +111,9 @@ class ContentType implements UnstructuredInterface
      */
     public function setType($type)
     {
-        $type = trim($type);
-
-        if (! preg_match('/^[a-z0-9.+-\/]/i', $type)) {
+        if (!preg_match('/^[a-z-]+\/[a-z0-9.+-]+$/i', $type)) {
             throw new Exception\InvalidArgumentException(sprintf(
-                '%s contains unsupported characters; received "%s"',
+                '%s expects a value in the format "type/subtype"; received "%s"',
                 __METHOD__,
                 (string) $type
             ));

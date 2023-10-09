@@ -1,8 +1,10 @@
 <?php
 /**
- * @see       https://github.com/zendframework/zend-mail for the canonical source repository
- * @copyright Copyright (c) 2005-2018 Zend Technologies USA Inc. (https://www.zend.com)
- * @license   https://github.com/zendframework/zend-mail/blob/master/LICENSE.md New BSD License
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Mail\Transport;
@@ -40,14 +42,6 @@ class SmtpOptions extends AbstractOptions
     protected $port = 25;
 
     /**
-     * The timeout in seconds for the SMTP connection
-     * (Use null to disable it)
-     *
-     * @var int|null
-     */
-    protected $connectionTimeLimit;
-
-    /**
      * Return the local client hostname
      *
      * @return string
@@ -67,7 +61,7 @@ class SmtpOptions extends AbstractOptions
      */
     public function setName($name)
     {
-        if (! is_string($name) && $name !== null) {
+        if (!is_string($name) && $name !== null) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Name must be a string or null; argument of type "%s" provided',
                 (is_object($name) ? get_class($name) : gettype($name))
@@ -100,7 +94,7 @@ class SmtpOptions extends AbstractOptions
      */
     public function setConnectionClass($connectionClass)
     {
-        if (! is_string($connectionClass) && $connectionClass !== null) {
+        if (!is_string($connectionClass) && $connectionClass !== null) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Connection class must be a string or null; argument of type "%s" provided',
                 (is_object($connectionClass) ? get_class($connectionClass) : gettype($connectionClass))
@@ -182,27 +176,6 @@ class SmtpOptions extends AbstractOptions
             ));
         }
         $this->port = $port;
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getConnectionTimeLimit()
-    {
-        return $this->connectionTimeLimit;
-    }
-
-    /**
-     * @param int|null $seconds
-     * @return self
-     */
-    public function setConnectionTimeLimit($seconds)
-    {
-        $this->connectionTimeLimit = $seconds === null
-            ? null
-            : (int) $seconds;
-
         return $this;
     }
 }
