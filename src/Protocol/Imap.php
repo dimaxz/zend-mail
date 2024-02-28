@@ -148,6 +148,10 @@ class Imap
     {
         $line = $this->_nextLine();
 
+        if (strpos($line, ' ') === false) {
+            return $line;
+        }
+
         // separate tag from line
         list($tag, $line) = explode(' ', $line, 2);
 
