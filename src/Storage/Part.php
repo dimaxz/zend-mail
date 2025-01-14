@@ -288,6 +288,13 @@ class Part implements RecursiveIterator, Part\PartInterface
      */
     public function getHeader($name, $format = null)
     {
+
+        if(!$this->getHeaders()){
+            throw new Exception\InvalidArgumentException(
+                "Header with Name $name not found"
+            );
+        }
+
         $header = $this->getHeaders()->get($name);
         if ($header === false) {
             $lowerName = strtolower(preg_replace('%([a-z])([A-Z])%', '\1-\2', $name));
